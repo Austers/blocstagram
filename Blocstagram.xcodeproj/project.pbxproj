@@ -10,9 +10,7 @@
 		13EF422B19ED80DA001285AA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF422A19ED80DA001285AA /* main.m */; };
 		13EF422E19ED80DA001285AA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF422D19ED80DA001285AA /* AppDelegate.m */; };
 		13EF423119ED80DA001285AA /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF423019ED80DA001285AA /* ViewController.m */; };
-		13EF423419ED80DA001285AA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 13EF423219ED80DA001285AA /* Main.storyboard */; };
 		13EF423619ED80DA001285AA /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13EF423519ED80DA001285AA /* Images.xcassets */; };
-		13EF423919ED80DA001285AA /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13EF423719ED80DA001285AA /* LaunchScreen.xib */; };
 		13EF424519ED80DA001285AA /* BlocstagramTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF424419ED80DA001285AA /* BlocstagramTests.m */; };
 /* End PBXBuildFile section */
 
@@ -34,9 +32,7 @@
 		13EF422D19ED80DA001285AA /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		13EF422F19ED80DA001285AA /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		13EF423019ED80DA001285AA /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		13EF423319ED80DA001285AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		13EF423519ED80DA001285AA /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		13EF423819ED80DA001285AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		13EF423E19ED80DA001285AA /* BlocstagramTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlocstagramTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		13EF424319ED80DA001285AA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		13EF424419ED80DA001285AA /* BlocstagramTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BlocstagramTests.m; sourceTree = "<group>"; };
@@ -85,9 +81,7 @@
 				13EF422D19ED80DA001285AA /* AppDelegate.m */,
 				13EF422F19ED80DA001285AA /* ViewController.h */,
 				13EF423019ED80DA001285AA /* ViewController.m */,
-				13EF423219ED80DA001285AA /* Main.storyboard */,
 				13EF423519ED80DA001285AA /* Images.xcassets */,
-				13EF423719ED80DA001285AA /* LaunchScreen.xib */,
 				13EF422819ED80DA001285AA /* Supporting Files */,
 			);
 			path = Blocstagram;
@@ -199,8 +193,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13EF423419ED80DA001285AA /* Main.storyboard in Resources */,
-				13EF423919ED80DA001285AA /* LaunchScreen.xib in Resources */,
 				13EF423619ED80DA001285AA /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -242,25 +234,6 @@
 			targetProxy = 13EF423F19ED80DA001285AA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		13EF423219ED80DA001285AA /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				13EF423319ED80DA001285AA /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		13EF423719ED80DA001285AA /* LaunchScreen.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				13EF423819ED80DA001285AA /* Base */,
-			);
-			name = LaunchScreen.xib;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		13EF424619ED80DA001285AA /* Debug */ = {
