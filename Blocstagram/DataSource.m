@@ -23,7 +23,7 @@
     static dispatch_once_t once;
     static id sharedInstance;
     dispatch_once(&once, ^{
-        sharedInstance = [[self alloc]init];
+        sharedInstance = [[self alloc] init];
     });
     return sharedInstance;
 }
@@ -46,9 +46,10 @@
         UIImage *image = [UIImage imageNamed:imageName];
         
         if (image) {
-            Media *media = [[Media alloc]init];
+            Media *media = [[Media alloc] init];
             media.user = [self randomUser];
             media.image = image;
+            media.caption = @"for now this is miking";
             
             NSUInteger commentCount = arc4random_uniform(10);
             NSMutableArray *randomComments = [NSMutableArray array];
@@ -82,7 +83,7 @@
 - (Comment *) randomComment {
     Comment *comment = [[Comment alloc]init];
     
-   // Comment.from = [self randomUser];
+    comment.from = [self randomUser];
     
     NSUInteger wordCount = arc4random_uniform(20);
     
