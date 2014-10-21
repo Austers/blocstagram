@@ -17,6 +17,12 @@
 @property (nonatomic, strong) UILabel *usernameAndCaptionLabel;
 @property (nonatomic, strong) UILabel *commentLabel;
 
+@property (nonatomic, strong) NSLayoutConstraint *imageHeightConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *usernameAndCaptionLabelHeightConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *commentLabelHeightConstraint;
+
+
+
 @end
 
 static UIFont *lightFont;
@@ -41,10 +47,32 @@ static NSParagraphStyle *paragraphStyle;
         for (UIView *view in @[self.mediaImageView, self.usernameAndCaptionLabel, self.commentLabel])
         {
             [self.contentView addSubview:view];
+            view.translatesAutoresizingMaskIntoConstraints = NO;
         }
+    
+        NSDictionary *viewDictionary = NSDictionaryOfVariableBindings(_mediaImageView, _usernameAndCaptionLabel, _commentLabel);
+        
+    
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_mediaImageView]|" options:kNilOptions metrics:nil views:viewDictionary]];
+        
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_usernameAndCaptionLabel]|" options:kNilOptions metrics:nil views:viewDictionary]];
+        
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_commentLabel]|" options: kNilOptions metrics:nil views:viewDictionary]];
+        
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_mediaImageView][_usernameAndCaptionLabel][_commentLabel]" options:kNilOptions metrics:nil views:viewDictionary]];
+    
+        self.imageHeightConstraint = [NSLayoutConstraint constraintWithItem:_mediaImageView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:100];
+        
+        self.usernameAndCaptionLabelHeightConstraint = [NSLayoutConstraint constraintWithItem:_usernameAndCaptionLabel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:100];
+        
+        self.commentLabelHeightConstraint = [NSLayoutConstraint constraintWithItem:_commentLabel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:100];
+        
+        [self.contentView addConstraints:@[self.imageHeightConstraint, self.imageHeightConstraint, self.usernameAndCaptionLabelHeightConstraint, self.commentLabelHeightConstraint]];
+        
     }
     return self;
 }
+
 
 +(void)load {
 
@@ -96,7 +124,7 @@ static NSParagraphStyle *paragraphStyle;
     return mutableUsernameAndCaptionString;
                                                                                                                                 
 }
-
+/*
 -(CGSize) sizeOfString:(NSAttributedString *)string {
     CGSize maxSize = CGSizeMake(CGRectGetWidth(self.contentView.bounds) - 40, 0.0);
     CGRect sizeRect = [string boundingRectWithSize:maxSize options:NSStringDrawingUsesLineFragmentOrigin context:nil];
@@ -104,10 +132,12 @@ static NSParagraphStyle *paragraphStyle;
     sizeRect = CGRectIntegral(sizeRect);
     return sizeRect.size;
 }
+*/
+
 
 -(void) layoutSubviews {
     [super layoutSubviews];
-    
+/*
     CGFloat imageHeight = self.mediaitem.image.size.height / self.mediaitem.image.size.width * CGRectGetWidth(self.contentView.bounds);
     self.mediaImageView.frame = CGRectMake(0, 0, CGRectGetWidth(self.contentView.bounds), imageHeight);
     
@@ -122,11 +152,25 @@ static NSParagraphStyle *paragraphStyle;
 
 }
 
+*/
+    
+    CGSize maxSize = CGSizeMake(CGRectGetWidth(self.bounds), CGFLOAT_MAX);
+    CGSize usernameLabelSize = [self.usernameAndCaptionLabel sizeThatFits:maxSize];
+    CGSize commentLabelSize = [self.commentLabel sizeThatFits:maxSize];
+    
+    self.usernameAndCaptionLabelHeightConstraint.constant = usernameLabelSize.height + 20;
+    self.commentLabelHeightConstraint.constant = commentLabelSize.height + 20;
+    
+    self.separatorInset = UIEdgeInsetsMake(0, 0, 0, CGRectGetWidth(self.bounds));
+}
+
 -(void) setMediaitem:(Media *)mediaitem {
     _mediaitem = mediaitem;
     self.mediaImageView.image = _mediaitem.image;
     self.usernameAndCaptionLabel.attributedText = [self usernameAndCaptionString];
     self.commentLabel.attributedText = [self commentString];
+    
+    self.imageHeightConstraint.constant = self.mediaitem.image.size.height / self.mediaitem.image.size.width * CGRectGetWidth(self.contentView.bounds);
 
 }
 
@@ -134,11 +178,15 @@ static NSParagraphStyle *paragraphStyle;
 
     MediaTableViewCell *layoutCell = [[MediaTableViewCell alloc]initWithStyle:(UITableViewCellStyleDefault) reuseIdentifier:@"layoutCell"];
     
-    layoutCell.frame = CGRectMake(0, 0, width, CGFLOAT_MAX);
+    //layoutCell.frame = CGRectMake(0, 0, width, CGFLOAT_MAX);
     
     layoutCell.mediaitem = mediaItem;
     
-    [layoutCell layoutSubviews];
+    //[layoutCell layoutSubviews];
+    layoutCell.frame = CGRectMake(0, 0, width, CGRectGetHeight(layoutCell.frame));
+    
+    [layoutCell setNeedsLayout];
+    [layoutCell layoutIfNeeded];
     
     return CGRectGetMaxY(layoutCell.commentLabel.frame);
 }
