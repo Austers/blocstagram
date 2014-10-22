@@ -10,13 +10,14 @@
 #import "User.h"
 #import "Media.h"
 #import "Comment.h"
+#import "LoginViewController.h"
 
 @interface DataSource () {
     NSMutableArray *_mediaItems;
 }
 
+@property (nonatomic, strong) NSString *accessToken;
 @property (nonatomic, strong) NSArray *mediaItems;
-
 @property (nonatomic, assign) BOOL isRefreshing;
 @property (nonatomic, assign) BOOL isLoadingOlderItems;
 
@@ -24,10 +25,64 @@
 
 @implementation DataSource
 
++(NSString *) instagramClientID {
+return @"ce5d64cb11c54196a874ff3f0a1a8c98";
+}
+
+-(void) populateDataWithParameters:(NSDictionary *)parameters {
+
+    if (self.accessToken) {
+    
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        
+            NSMutableString *urlString = [NSMutableString stringWithFormat:@"https://api.instagram.com/v1/users/self/feed?access_token=%@", self.accessToken];
+            
+            for (NSString *parameterName in parameters) {
+            
+                [urlString appendFormat:@"&%@=%@", parameterName, parameters[parameterName]];
+            }
+        
+            NSURL *url = [NSURL URLWithString:urlString];
+            
+            if (url) {
+                NSURLRequest *request = [NSURLRequest requestWithURL:url];
+                
+                NSURLResponse *response;
+                NSError *webError;
+                NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&webError];
+                
+                NSError *jsonError;
+                NSDictionary *feedDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&jsonError];
+                
+                if (feedDictionary) {
+                
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                    
+                        [self parseDataFromFeedDictionary:feedDictionary fromRequestWithParameters:parameters];
+                    });
+                }
+            
+            }
+        
+        
+        
+        });
+    
+    }
+
+}
+
+-(void) parseDataFromFeedDictionary:(NSDictionary *) feedDictionary fromRequestWithParameters:(NSDictionary *)parameters {
+    NSLog(@"%@", feedDictionary);
+}
+
 -(void) requestOldItemsWithCompletionHandler:(NewItemCompletionBlock)completionHandler {
 
     if (self.isLoadingOlderItems == NO) {
         self.isLoadingOlderItems = YES;
+        
+        /*
+        
         Media *media = [[Media alloc]init];
         media.user = [self randomUser];
         media.image = [UIImage imageNamed:@"1.jpq"];
@@ -35,7 +90,9 @@
         
         NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
         [mutableArrayWithKVO addObject:media];
-        
+       
+         */
+         
         self.isLoadingOlderItems = NO;
         
         if (completionHandler) {
@@ -49,6 +106,8 @@
     
     if (self.isRefreshing == NO) {
         self.isRefreshing = YES;
+ 
+        /*
         
         Media *media = [[Media alloc]init];
         media.user = [self randomUser];
@@ -57,7 +116,9 @@
         
         NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
         [mutableArrayWithKVO insertObject:media atIndex:0];
-        
+    
+         */
+         
         self.isRefreshing = NO;
         
         if (completionHandler) {
@@ -111,12 +172,22 @@
     self = [super init];
     
     if (self) {
-        [self addRandomData];
+        [self registerForAccessTokenNotification];
     }
     
     return self;
 }
 
+-(void) registerForAccessTokenNotification {
+[[NSNotificationCenter defaultCenter] addObserverForName:LoginViewControllerDidGetAccessTokenNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
+    self.accessToken = note.object;
+    
+    [self populateDataWithParameters:nil];
+    
+}];
+
+}
+/*
 -(void) addRandomData {
     NSMutableArray *randomMediaItems = [NSMutableArray array];
 
@@ -208,7 +279,7 @@ NSString *alphabet = @"abcdefghijklmnopqrstuvwxyz";
 
 }
 
-
+*/
 
 
 
