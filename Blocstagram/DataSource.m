@@ -20,16 +20,17 @@
 @property (nonatomic, strong) NSArray *mediaItems;
 @property (nonatomic, assign) BOOL isRefreshing;
 @property (nonatomic, assign) BOOL isLoadingOlderItems;
+@property (nonatomic, assign) BOOL thereAreNoMoreOlderMessages;
 
 @end
 
 @implementation DataSource
 
 +(NSString *) instagramClientID {
-return @"ce5d64cb11c54196a874ff3f0a1a8c98";
+    return @"ce5d64cb11c54196a874ff3f0a1a8c98";
 }
 
--(void) populateDataWithParameters:(NSDictionary *)parameters {
+-(void) populateDataWithParameters:(NSDictionary *)parameters completionHandler:(NewItemCompletionBlock)completionHandler {
 
     if (self.accessToken) {
     
@@ -51,79 +52,141 @@ return @"ce5d64cb11c54196a874ff3f0a1a8c98";
                 NSError *webError;
                 NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&webError];
                 
-                NSError *jsonError;
-                NSDictionary *feedDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&jsonError];
-                
-                if (feedDictionary) {
-                
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                    if (responseData) {
+                        NSError *jsonError;
+                        NSDictionary *feedDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&jsonError];
                     
-                        [self parseDataFromFeedDictionary:feedDictionary fromRequestWithParameters:parameters];
+                        if (feedDictionary) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                
+                                [self parseDataFromFeedDictionary:feedDictionary fromRequestWithParameters:parameters];
+                                if (completionHandler) {
+                                    completionHandler(nil);
+                                }
+                            });
+                        }else if (completionHandler) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completionHandler (jsonError);
+                        });
+                        }
+                    } else if (completionHandler) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completionHandler(webError);
                     });
+                    }
                 }
-            
-            }
-        
-        
-        
         });
-    
     }
-
 }
 
+
+
 -(void) parseDataFromFeedDictionary:(NSDictionary *) feedDictionary fromRequestWithParameters:(NSDictionary *)parameters {
-    NSLog(@"%@", feedDictionary);
+    
+    NSArray *mediaArray = feedDictionary[@"data"];
+    
+    NSMutableArray *tmpMediaItems = [NSMutableArray array];
+    
+    for (NSDictionary *mediaDictionary in mediaArray) {
+        Media *mediaItem = [[Media alloc]initWithDictionary:mediaDictionary];
+        
+        if (mediaItem) {
+            [tmpMediaItems addObject:mediaItem];
+            [self downloadImageForMediaItem:mediaItem];
+        }
+        
+    }
+    
+    NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
+    
+    if (parameters[@"min_id"]) {
+        NSRange rangeOfIndexes = NSMakeRange(0, tmpMediaItems.count);
+        NSIndexSet *indexSetOfNewObjects = [NSIndexSet indexSetWithIndexesInRange:rangeOfIndexes];
+        
+        [mutableArrayWithKVO insertObjects:tmpMediaItems atIndexes:indexSetOfNewObjects];
+    }else if (parameters[@"max_id"]) {
+        if (tmpMediaItems.count == 0) {
+            self.thereAreNoMoreOlderMessages = YES;
+        }
+        [mutableArrayWithKVO addObjectsFromArray:tmpMediaItems];
+    
+    } else {
+        [self willChangeValueForKey:@"mediaItems"];
+        self.mediaItems = tmpMediaItems;
+        [self didChangeValueForKey:@"mediaItems"];
+}
+}
+
+-(void) downloadImageForMediaItem:(Media *)mediaItem {
+    if (mediaItem.mediaURL && !mediaItem.image) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSURLRequest *request = [NSURLRequest requestWithURL:mediaItem.mediaURL];
+        
+        NSURLResponse *response;
+        NSError *error;
+        NSData *imageData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+        
+        if (imageData) {
+            UIImage *image = [UIImage imageWithData:imageData];
+            
+            if (image) {
+                mediaItem.image = image;
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
+                    NSUInteger index = [mutableArrayWithKVO indexOfObject:mediaItem];
+                    [mutableArrayWithKVO replaceObjectAtIndex:index withObject:mediaItem];
+                });
+            }
+        }else{
+            NSLog(@"Error downloading image: %@", error);
+        }
+    });
+    }
 }
 
 -(void) requestOldItemsWithCompletionHandler:(NewItemCompletionBlock)completionHandler {
 
-    if (self.isLoadingOlderItems == NO) {
+    if (self.isLoadingOlderItems == NO && self.thereAreNoMoreOlderMessages == NO) {
         self.isLoadingOlderItems = YES;
         
-        /*
         
-        Media *media = [[Media alloc]init];
-        media.user = [self randomUser];
-        media.image = [UIImage imageNamed:@"1.jpq"];
-        media.caption = [self randomSentenceWithMaximumNumberOfWords:7];
+        NSString *maxID = [[self.mediaItems lastObject]idNumber];
+        NSDictionary *parameters = @{@"max_id": maxID};
         
-        NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
-        [mutableArrayWithKVO addObject:media];
-       
-         */
-         
+        [self populateDataWithParameters:parameters completionHandler:^(NSError *error) {
+        
         self.isLoadingOlderItems = NO;
         
         if (completionHandler) {
-            completionHandler(nil);
+            completionHandler(error);
         }
-    }
+        }];
+        }
 }
 
 
 -(void) requestNewItemsWithCompletionHandler:(NewItemCompletionBlock)completionHandler {
     
+    self.thereAreNoMoreOlderMessages = NO;
+    
     if (self.isRefreshing == NO) {
         self.isRefreshing = YES;
- 
-        /*
+
+        NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
         
-        Media *media = [[Media alloc]init];
-        media.user = [self randomUser];
-        media.image = [UIImage imageNamed:@"10.jpg"];
-        media.caption = [self randomSentenceWithMaximumNumberOfWords:7];
-        
-        NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
-        [mutableArrayWithKVO insertObject:media atIndex:0];
-    
-         */
-         
-        self.isRefreshing = NO;
-        
-        if (completionHandler) {
-            completionHandler(nil);
+        NSString *minID = [[self.mediaItems firstObject] idNumber];
+        if (minID.length > 0)
+        {
+            parameters[@"min_id"] = minID;
         }
+        [self populateDataWithParameters:parameters completionHandler:^(NSError *error) {
+            self.isRefreshing = NO;
+            
+            if (completionHandler) {
+                completionHandler(error);
+            }
+        }];
     }
 
 }
@@ -182,106 +245,10 @@ return @"ce5d64cb11c54196a874ff3f0a1a8c98";
 [[NSNotificationCenter defaultCenter] addObserverForName:LoginViewControllerDidGetAccessTokenNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
     self.accessToken = note.object;
     
-    [self populateDataWithParameters:nil];
+    [self populateDataWithParameters:nil completionHandler:nil];
     
 }];
 
 }
-/*
--(void) addRandomData {
-    NSMutableArray *randomMediaItems = [NSMutableArray array];
-
-    for (int i = 1; i <=10; i++) {
-        NSString *imageName = [NSString stringWithFormat:@"%d.jpg", i];
-        UIImage *image = [UIImage imageNamed:imageName];
-       NSString *captionString = [self.randomComment text];
-        
-        if (image) {
-            Media *media = [[Media alloc] init];
-            media.user = [self randomUser];
-            media.image = image;
-            media.caption = [NSString stringWithString:captionString];
-            
-            NSUInteger commentCount = arc4random_uniform(10);
-            NSMutableArray *randomComments = [NSMutableArray array];
-            
-            for (int i = 0; i <= commentCount; i++) {
-                Comment *randomComment = [self randomComment];
-                [randomComments addObject:randomComment];
-            }
-            media.comments = randomComments;
-            
-            [randomMediaItems addObject:media];
-        
-        }
-    }
-    self.mediaItems = randomMediaItems;
-}
-
-
--(User *) randomUser {
-    User *user = [[User alloc]init];
-    
-    user.userName = [self randomStringOfLength:arc4random_uniform(10)];
-    
-    NSString *firstName = [self randomStringOfLength:arc4random_uniform(7)];
-    NSString *lastName = [self randomStringOfLength:arc4random_uniform(12)];
-    user.fullName = [NSString stringWithFormat:@"%@ %@", firstName, lastName];
-    
-    return user;
-}
-
-- (Comment *) randomComment {
-    Comment *comment = [[Comment alloc]init];
-    
-    comment.from = [self randomUser];
-    
-    NSUInteger wordCount = arc4random_uniform(20);
-    
-    NSMutableString *randomSentence = [[NSMutableString alloc]init];
-    
-    for (int i = 0; i <= wordCount; i++) {
-        NSString *randomWord = [self randomStringOfLength:arc4random_uniform(12)];
-        [randomSentence appendFormat:@"%@ ", randomWord];
-    }
-        
-    comment.text = randomSentence;
-
-    return comment;
-}
-
-- (NSString *) randomSentenceWithMaximumNumberOfWords:(NSUInteger) numberOfWords {
-    NSUInteger wordCount = arc4random_uniform(20);
-    
-    NSMutableString *randomSentence = [[NSMutableString alloc] init];
-    
-    for (int i  = 0; i <= wordCount; i++) {
-        NSString *randomWord = [self randomStringOfLength:arc4random_uniform(12)];
-        if (randomWord.length > 0) {
-            [randomSentence appendFormat:@"%@ ", randomWord];
-        }
-    }
-    
-    return randomSentence;
-}
-
-
--(NSString *) randomStringOfLength:(NSUInteger) len {
-NSString *alphabet = @"abcdefghijklmnopqrstuvwxyz";
-    
-    NSMutableString *s = [NSMutableString string];
-    for (NSUInteger i = 0U; i < len; i++) {
-        u_int32_t r = arc4random_uniform((u_int32_t)[alphabet length]);
-        unichar c = [alphabet characterAtIndex:r];
-        [s appendFormat:@"%C", c];
-    }
-    return [NSString stringWithString:s];
-
-}
-
-*/
-
-
-
 
 @end

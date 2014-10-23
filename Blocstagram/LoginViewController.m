@@ -30,16 +30,16 @@ return @"http://bloc.io";
     UIWebView *webView = [[UIWebView alloc]init];
     webView.delegate = self;
 
+    
+    self.webView = webView;
+    self.view = webView;
+    
     self.backButton = [[UIBarButtonItem alloc]initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:self.webView action:@selector(goBack)];
     
     self.navigationItem.leftBarButtonItem = self.backButton;
     
     self.navigationItem.leftBarButtonItem.enabled = NO;
-    
-    self.webView = webView;
-    self.view = webView;
 }
-
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -110,15 +110,5 @@ return @"http://bloc.io";
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end
