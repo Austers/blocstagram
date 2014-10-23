@@ -11,6 +11,7 @@
 #import "Media.h"
 #import "Comment.h"
 #import "LoginViewController.h"
+#import <UICKeyChainStore.h> //<> used when importing external files
 
 @interface DataSource () {
     NSMutableArray *_mediaItems;
@@ -115,6 +116,38 @@
         self.mediaItems = tmpMediaItems;
         [self didChangeValueForKey:@"mediaItems"];
 }
+    
+    //Write the file to the disk when we have just got the new data...
+    
+    if (tmpMediaItems.count > 0) {
+    
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+           
+            NSUInteger numberOfItemsToSave = MIN(self.mediaItems.count, 50);
+            
+            // Number up to 50 (so we don't flood the user's hard drive)
+            
+            NSArray *mediaItemsToSave = [self.mediaItems subarrayWithRange:NSMakeRange(0, numberOfItemsToSave)];
+            
+            NSString *fullPath = [self pathForFilename:NSStringFromSelector(@selector(mediaItems))];
+           
+            // convert the array into an NSData
+            
+            NSData *mediaItemData = [NSKeyedArchiver archivedDataWithRootObject:mediaItemsToSave];
+            
+            NSError *dataError;
+           
+            //Save it to disk
+            //NSDataWritingAtomic ensures a complete file is saved. Without it, we might corrupt the file if the app crahses whilst writing to disk
+            //NSDataWritingFileProtectionCompleteUnlessOpen encrypts the data
+            BOOL wroteSuccessfully = [mediaItemData writeToFile:fullPath options:NSDataWritingAtomic | NSDataWritingFileProtectionCompleteUnlessOpen error:&dataError];
+            
+            if (!wroteSuccessfully) {
+                NSLog(@"Couldn't write file: %@", dataError);
+            }
+            
+        });
+    }
 }
 
 -(void) downloadImageForMediaItem:(Media *)mediaItem {
@@ -235,9 +268,38 @@
     self = [super init];
     
     if (self) {
-        [self registerForAccessTokenNotification];
+        
+        //on init, we will look in the KeyChainStore for access token. If it is already stored (because we have logged in already and done so in the process -see'registerForAccessTokenNotification) - then the sharedInstance will be presented. If it is not stored then the method 'registerForAccessTokenNotification' will be called to get the access token and it will be stored in the chain once recovered
+        
+        self.accessToken = [UICKeyChainStore stringForKey:@"access token"];
+        
+        if (!self.accessToken) {
+            [self registerForAccessTokenNotification];
+        } else {
+            
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                NSString *fullPath = [self pathForFilename:NSStringFromSelector(@selector(mediaItems))];
+                NSArray *storedMediaItems = [NSKeyedUnarchiver unarchiveObjectWithFile:fullPath];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (storedMediaItems.count > 0) {
+                        
+                        //We make a mutable copy as the copy stored to disk is immutable
+                        
+                        NSMutableArray *mutableMediaItems = [storedMediaItems mutableCopy];
+                        
+                        [self willChangeValueForKey:@"mediaItems"];
+                         self.mediaItems = mutableMediaItems;
+                         [self didChangeValueForKey:@"mediaItems"];
+                          } else {
+                              [self populateDataWithParameters:nil completionHandler:nil];
+                          }
+                          });
+                          });
+        }
+        
+        [self requestNewItemsWithCompletionHandler:nil];
     }
-    
     return self;
 }
 
@@ -245,10 +307,24 @@
 [[NSNotificationCenter defaultCenter] addObserverForName:LoginViewControllerDidGetAccessTokenNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
     self.accessToken = note.object;
     
+    [UICKeyChainStore setString:self.accessToken forKey:@"access token"]; //save the token
+    
     [self populateDataWithParameters:nil completionHandler:nil];
     
 }];
 
 }
+
+// This method creates a string that contains an absolute path to the user's documents directory
+
+-(NSString *) pathForFilename:(NSString *) filename {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentaryDirectory = [paths firstObject];
+    NSString *dataPath = [documentaryDirectory stringByAppendingPathComponent:filename];
+    return dataPath;
+
+
+}
+
 
 @end

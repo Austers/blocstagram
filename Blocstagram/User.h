@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface User : NSObject
+@interface User : NSObject <NSCoding>
+
+//NSCoding is a protocol. Objects conform to it when the implement the specific methods and properties
 
 -(instancetype) initWithDictionary:(NSDictionary *)userDictionary;
 

@@ -27,6 +27,11 @@
     [DataSource sharedInstance];
     
     UINavigationController *navVC = [[UINavigationController alloc]init];
+    
+    // look to see if the token is stored. If not go ahead and load in the loginVC
+    
+    if (![DataSource sharedInstance].accessToken) {
+      
     LoginViewController *loginVC = [[LoginViewController alloc]init];
     [navVC setViewControllers:@[loginVC] animated:YES];
     
@@ -34,7 +39,14 @@
         ImagesTableViewController *imagesVC = [[ImagesTableViewController alloc]init];
         [navVC setViewControllers:@[imagesVC] animated:YES];
     }];
+        
+        // if the access token is stored, instead load in the imagesVC
+        
+    } else {
+        ImagesTableViewController *imagesVC = [[ImagesTableViewController alloc]init];
+        [navVC setViewControllers:@[imagesVC] animated:YES];
     
+    }
     self.window.rootViewController = navVC;
     
     self.window.backgroundColor = [UIColor whiteColor];
