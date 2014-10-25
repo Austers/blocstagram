@@ -12,6 +12,7 @@
 #import "Comment.h"
 #import "LoginViewController.h"
 #import <UICKeyChainStore.h> //<> used when importing external files
+#import <AFNetworking/AFNetworking.h>
 
 @interface DataSource () {
     NSMutableArray *_mediaItems;
@@ -22,6 +23,7 @@
 @property (nonatomic, assign) BOOL isRefreshing;
 @property (nonatomic, assign) BOOL isLoadingOlderItems;
 @property (nonatomic, assign) BOOL thereAreNoMoreOlderMessages;
+@property (nonatomic, strong) AFHTTPRequestOperationManager *instagramOperationManager;
 
 @end
 
@@ -35,51 +37,28 @@
 
     if (self.accessToken) {
     
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        //We create a parameters dictionary for the access token and add in any other parameters that might be passed in (like min_id or max_id). We then tell the request operation manager to get the resource and if it is successful - send it to parseDataFromFeedDictionary:fromRequestWithParameters: for parsin....
         
-            NSMutableString *urlString = [NSMutableString stringWithFormat:@"https://api.instagram.com/v1/users/self/feed?access_token=%@", self.accessToken];
-            
-            for (NSString *parameterName in parameters) {
-            
-                [urlString appendFormat:@"&%@=%@", parameterName, parameters[parameterName]];
-            }
         
-            NSURL *url = [NSURL URLWithString:urlString];
-            
-            if (url) {
-                NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        NSMutableDictionary *mutableParameters = [@{@"access_token":self.accessToken} mutableCopy];
+        
+        [mutableParameters addEntriesFromDictionary:parameters];
+        
+        [self.instagramOperationManager GET:@"users/self/feed" parameters:mutableParameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            if ([responseObject isKindOfClass:[NSDictionary class]]) {
+                [self parseDataFromFeedDictionary:responseObject fromRequestWithParameters:parameters];
                 
-                NSURLResponse *response;
-                NSError *webError;
-                NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&webError];
-                
-                    if (responseData) {
-                        NSError *jsonError;
-                        NSDictionary *feedDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&jsonError];
-                    
-                        if (feedDictionary) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                
-                                [self parseDataFromFeedDictionary:feedDictionary fromRequestWithParameters:parameters];
-                                if (completionHandler) {
-                                    completionHandler(nil);
-                                }
-                            });
-                        }else if (completionHandler) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            completionHandler (jsonError);
-                        });
-                        }
-                    } else if (completionHandler) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completionHandler(webError);
-                    });
-                    }
+                if (completionHandler) {
+                    completionHandler(nil);
                 }
-        });
+            }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            if (completionHandler) {
+                completionHandler(error);
+            }
+        }];
     }
 }
-
 
 
 -(void) parseDataFromFeedDictionary:(NSDictionary *) feedDictionary fromRequestWithParameters:(NSDictionary *)parameters {
@@ -152,29 +131,19 @@
 
 -(void) downloadImageForMediaItem:(Media *)mediaItem {
     if (mediaItem.mediaURL && !mediaItem.image) {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSURLRequest *request = [NSURLRequest requestWithURL:mediaItem.mediaURL];
-        
-        NSURLResponse *response;
-        NSError *error;
-        NSData *imageData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-        
-        if (imageData) {
-            UIImage *image = [UIImage imageWithData:imageData];
-            
-            if (image) {
-                mediaItem.image = image;
+
+        [self.instagramOperationManager GET:mediaItem.mediaURL.absoluteString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            if ([responseObject isKindOfClass:[UIImage class]]) {
+                mediaItem.image = responseObject;
+                NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
+                NSUInteger index = [mutableArrayWithKVO indexOfObject:mediaItem];
+                [mutableArrayWithKVO replaceObjectAtIndex:index withObject:mediaItem];
                 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
-                    NSUInteger index = [mutableArrayWithKVO indexOfObject:mediaItem];
-                    [mutableArrayWithKVO replaceObjectAtIndex:index withObject:mediaItem];
-                });
             }
-        }else{
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error downloading image: %@", error);
-        }
-    });
+        }];
+        
     }
 }
 
@@ -268,6 +237,20 @@
     self = [super init];
     
     if (self) {
+        
+        //here we initialise the operation manager...
+        
+        NSURL *baseURL = [NSURL URLWithString:@"https//api.instagram.com/v1/"];
+        self.instagramOperationManager = [[AFHTTPRequestOperationManager alloc]initWithBaseURL:baseURL];
+        
+        AFJSONRequestSerializer *jsonSerializer = [AFJSONRequestSerializer serializer];
+        
+        AFImageResponseSerializer *imageSerializer = [AFImageResponseSerializer serializer];
+        imageSerializer.imageScale = 1.0;
+        
+        AFCompoundResponseSerializer *serializer = [AFCompoundResponseSerializer compoundSerializerWithResponseSerializers:@[jsonSerializer, imageSerializer]];
+        self.instagramOperationManager.responseSerializer = serializer;
+        
         
         //on init, we will look in the KeyChainStore for access token. If it is already stored (because we have logged in already and done so in the process -see'registerForAccessTokenNotification) - then the sharedInstance will be presented. If it is not stored then the method 'registerForAccessTokenNotification' will be called to get the access token and it will be stored in the chain once recovered
         

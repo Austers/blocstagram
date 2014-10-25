@@ -220,14 +220,10 @@
     }
 }
 
-
-
-
-
-
-
-
-
-
+-(void) cell:(MediaTableViewCell *)cell didTapWithTwoFingers:(UIImageView *)imageView {
+    [[DataSource sharedInstance] requestNewItemsWithCompletionHandler:^(NSError *error) {
+        NSLog(@"It worked");
+    }];
+}
 
 @end

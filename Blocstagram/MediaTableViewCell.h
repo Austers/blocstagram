@@ -22,6 +22,8 @@
 
 -(void) cell:(MediaTableViewCell *)cell didLongPressImageView:(UIImageView *)imageView;
 
+-(void) cell:(MediaTableViewCell *)cell didTapWithTwoFingers:(UIImageView *)imageView;
+
 @end
 
 
