@@ -12,14 +12,21 @@
 #import "User.h"
 #import "Comment.h"
 #import "MediaTableViewCell.h"
+#import "MediaFullScreenViewController.h"
+#import "MediaFullScreenAnimator.h"
 
-@interface ImagesTableViewController ()
+@interface ImagesTableViewController () <MediaTableViewCellDelegate, UIViewControllerTransitioningDelegate>
+
+@property (nonatomic, weak) UIImageView *lastTappedImageView;
 
 @end
 
 @implementation ImagesTableViewController
 
 - (void)viewDidLoad {
+
+    self.title = @"Images from instagram";
+    
     [super viewDidLoad];
     
     [[DataSource sharedInstance] addObserver:self forKeyPath:@"mediaItems" options:0 context:nil];
@@ -119,14 +126,18 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   
-
-    
     MediaTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"mediaCell" forIndexPath:indexPath];
+    
+    //When we create (or dequeue) a cell, we now need to set its delegate (for gesture code to work (see delegate method)...
+    
+    cell.delegate = self;
+    
     cell.mediaitem = [DataSource sharedInstance].mediaItems[indexPath.row];
     
     
     return cell;
 }
+
 
 -(CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     Media *item = [DataSource sharedInstance].mediaItems[indexPath.row];
@@ -154,5 +165,69 @@
 
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
 }
+
+//Here we implement the delegate method...
+
+#pragma mark - MediaTableViewCellDelegate
+
+-(void) cell:(MediaTableViewCell *)cell didTapImageView:(UIImageView *)imageView {
+    
+    // we need to set the properrty lastTappedImageView when the image is tapped...
+    
+    MediaFullScreenViewController *fullScreenVC = [[MediaFullScreenViewController alloc]initWithMedia:cell.mediaitem];
+    
+    //and let iOS know that the transition uses a delegate...
+    
+    fullScreenVC.transitioningDelegate = self;
+    fullScreenVC.modalPresentationStyle = UIModalPresentationCustom;
+    
+    [self presentViewController:fullScreenVC animated:YES completion:nil];
+}
+
+#pragma mark - UIViewControllerTransitionDelegate
+
+-(id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {
+
+    MediaFullScreenAnimator *animator = [MediaFullScreenAnimator new];
+    animator.presenting = YES;
+    animator.cellImageView = self.lastTappedImageView;
+    return animator;
+}
+
+-(id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+    MediaFullScreenAnimator *animator = [MediaFullScreenAnimator new];
+    animator.cellImageView = self.lastTappedImageView;
+    return animator;
+}
+
+-(void) cell:(MediaTableViewCell *)cell didLongPressImageView:(UIImageView *)imageView {
+    NSMutableArray *itemsToShare = [NSMutableArray array];
+
+    if (cell.mediaitem.caption.length > 0) {
+        [itemsToShare addObject:cell.mediaitem.caption];
+    }
+    
+    if (cell.mediaitem.image) {
+        [itemsToShare addObject:cell.mediaitem.image];
+    }
+    
+    if (itemsToShare.count > 0) {
+        
+        // code to present Activity View controller to allow sharing
+        
+        UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
+        [self presentViewController:activityVC animated:YES completion:nil];
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 @end

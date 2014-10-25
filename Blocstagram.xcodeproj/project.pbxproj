@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		13213AF619F7712600D5BF4B /* LoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 13213AF519F7712600D5BF4B /* LoginViewController.m */; };
 		133254FC19F4BAB700617E5B /* MediaTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 133254FB19F4BAB700617E5B /* MediaTableViewCell.m */; };
+		1359CBEF19FA346F008350A1 /* MediaFullScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1359CBEE19FA346F008350A1 /* MediaFullScreenViewController.m */; };
+		1359CBF219FA4A57008350A1 /* MediaFullScreenAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1359CBF119FA4A57008350A1 /* MediaFullScreenAnimator.m */; };
 		13EF422B19ED80DA001285AA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF422A19ED80DA001285AA /* main.m */; };
 		13EF422E19ED80DA001285AA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF422D19ED80DA001285AA /* AppDelegate.m */; };
 		13EF423119ED80DA001285AA /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 13EF423019ED80DA001285AA /* ViewController.m */; };
@@ -47,6 +49,10 @@
 		13213AF519F7712600D5BF4B /* LoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginViewController.m; sourceTree = "<group>"; };
 		133254FA19F4BAB700617E5B /* MediaTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaTableViewCell.h; sourceTree = "<group>"; };
 		133254FB19F4BAB700617E5B /* MediaTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MediaTableViewCell.m; sourceTree = "<group>"; };
+		1359CBED19FA346F008350A1 /* MediaFullScreenViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaFullScreenViewController.h; sourceTree = "<group>"; };
+		1359CBEE19FA346F008350A1 /* MediaFullScreenViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MediaFullScreenViewController.m; sourceTree = "<group>"; };
+		1359CBF019FA4A57008350A1 /* MediaFullScreenAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaFullScreenAnimator.h; sourceTree = "<group>"; };
+		1359CBF119FA4A57008350A1 /* MediaFullScreenAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MediaFullScreenAnimator.m; sourceTree = "<group>"; };
 		13EF422519ED80DA001285AA /* Blocstagram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blocstagram.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13EF422919ED80DA001285AA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		13EF422A19ED80DA001285AA /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -134,6 +140,10 @@
 				13EF426419ED8310001285AA /* ImagesTableViewController.m */,
 				133254FA19F4BAB700617E5B /* MediaTableViewCell.h */,
 				133254FB19F4BAB700617E5B /* MediaTableViewCell.m */,
+				1359CBED19FA346F008350A1 /* MediaFullScreenViewController.h */,
+				1359CBEE19FA346F008350A1 /* MediaFullScreenViewController.m */,
+				1359CBF019FA4A57008350A1 /* MediaFullScreenAnimator.h */,
+				1359CBF119FA4A57008350A1 /* MediaFullScreenAnimator.m */,
 				13F0530119F393AD0056940C /* DataSource.h */,
 				13F0530219F393AD0056940C /* DataSource.m */,
 				13F052F819F3911C0056940C /* User.h */,
@@ -360,8 +370,10 @@
 				13213AF619F7712600D5BF4B /* LoginViewController.m in Sources */,
 				13F052FA19F3911C0056940C /* User.m in Sources */,
 				13EF423119ED80DA001285AA /* ViewController.m in Sources */,
+				1359CBEF19FA346F008350A1 /* MediaFullScreenViewController.m in Sources */,
 				13EF422E19ED80DA001285AA /* AppDelegate.m in Sources */,
 				13EF422B19ED80DA001285AA /* main.m in Sources */,
+				1359CBF219FA4A57008350A1 /* MediaFullScreenAnimator.m in Sources */,
 				13EF426519ED8310001285AA /* ImagesTableViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

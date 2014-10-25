@@ -12,7 +12,9 @@
 #import "User.h"
 #import "DataSource.h"
 
-@interface MediaTableViewCell ()
+//We declare that we confirm to the gesture recogniser delegate protocol...
+
+@interface MediaTableViewCell () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UIImageView *mediaImageView;
 @property (nonatomic, strong) UILabel *usernameAndCaptionLabel;
@@ -22,9 +24,11 @@
 @property (nonatomic, strong) NSLayoutConstraint *usernameAndCaptionLabelHeightConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *commentLabelHeightConstraint;
 
-
+@property (nonatomic, strong) UITapGestureRecognizer *tapGestureRecognizer;
+@property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
 
 @end
+
 
 static UIFont *lightFont;
 static UIFont *boldFont;
@@ -41,6 +45,21 @@ static NSParagraphStyle *paragraphStyle;
     if (self) {
     
         self.mediaImageView = [[UIImageView alloc] init];
+        
+        //Here we add the gesture recognizer to the image view...
+        
+        self.mediaImageView.userInteractionEnabled = YES;
+        
+        self.tapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapFired:)];
+        self.tapGestureRecognizer.delegate = self;
+        [self.mediaImageView addGestureRecognizer:self.tapGestureRecognizer];
+        
+        //Initialise long tap gesture recogniser and add it to the image view...
+        
+        self.longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPressFired:)];
+        self.longPressGestureRecognizer.delegate = self;
+        [self.mediaImageView addGestureRecognizer:self.longPressGestureRecognizer];
+        
         self.usernameAndCaptionLabel = [[UILabel alloc]init];
         self.commentLabel = [[UILabel alloc]init];
         self.commentLabel.numberOfLines = 0;
@@ -74,6 +93,32 @@ static NSParagraphStyle *paragraphStyle;
     return self;
 }
 
+#pragma mark - Image View
+
+//Here we inform the delegate when the gesture recogniser fires...
+
+-(void) tapFired:(UITapGestureRecognizer *)sender {
+    [self.delegate cell:self didTapImageView:self.mediaImageView];
+}
+
+//and we do the same for the long press recogniser...
+
+-(void) longPressFired:(UILongPressGestureRecognizer *)sender {
+   
+    // if we don't specify the 'StateBegan' condition, the method will get called twice - once when the user presses and once when they releaase. By the same token, we could specify 'UIGestureRecognizerStateRecognized' so that the method gets called when the finger is lifter instead..
+    
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        [self.delegate cell:self didLongPressImageView:self.mediaImageView];
+    }
+}
+
+# pragma mark - UIGestureRecognizerDelegate
+
+// Here we ensure that the gesture recognizer only fires when the cell isn't in editing mode...
+
+-(BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    return self.isEditing == NO;
+}
 
 +(void)load {
 
@@ -137,6 +182,13 @@ static NSParagraphStyle *paragraphStyle;
     self.usernameAndCaptionLabelHeightConstraint.constant = usernameLabelSize.height + 20;
     self.commentLabelHeightConstraint.constant = commentLabelSize.height + 20;
     
+    // We removed the calculation of image height constraint from 'setMediaItem' and placed it in 'layoutSubviews' to avoid redrawing the cells if the user rotates the device wihilst in full-screen mode...
+    
+    if (_mediaitem.image) {
+        self.imageHeightConstraint.constant = self.mediaitem.image.size.height / self.mediaitem.image.size.width * CGRectGetWidth(self.contentView.bounds);
+    } else {
+        self.imageHeightConstraint.constant = 0;
+    }
     self.separatorInset = UIEdgeInsetsMake(0, 0, 0, CGRectGetWidth(self.bounds));
 }
 
@@ -145,12 +197,6 @@ static NSParagraphStyle *paragraphStyle;
     self.mediaImageView.image = _mediaitem.image;
     self.usernameAndCaptionLabel.attributedText = [self usernameAndCaptionString];
     self.commentLabel.attributedText = [self commentString];
-    
-    if (_mediaitem.image) {
-        self.imageHeightConstraint.constant = self.mediaitem.image.size.height / self.mediaitem.image.size.width * CGRectGetWidth(self.contentView.bounds);
-    } else {
-        self.imageHeightConstraint.constant = 0;
-    }
 
 }
 
