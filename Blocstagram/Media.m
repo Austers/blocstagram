@@ -19,10 +19,14 @@
         self.idNumber = mediaDictionary[@"id"];
         self.user = [[User alloc]initWithDictionary:mediaDictionary[@"user"]];
         NSString *standardResolutionImageURLString = mediaDictionary[@"images"][@"standard_resolution"][@"url"];
-        NSURL *standardResultionImageURL = [NSURL URLWithString:standardResolutionImageURLString];
+        NSURL *standardResolutionImageURL = [NSURL URLWithString:standardResolutionImageURLString];
         
-        if (standardResultionImageURL) {
-            self.mediaURL = standardResultionImageURL;
+        if (standardResolutionImageURL) {
+            self.mediaURL = standardResolutionImageURL;
+            
+            self.downloadState = MediaDownloadStateNeedsImage;
+        } else {
+            self.downloadState = MediaDownloadStateNonRecoverableError;
         }
     
         NSDictionary *captionDictionary = mediaDictionary[@"caption"];
@@ -67,6 +71,15 @@
         self.user = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(user))];
         self.mediaURL = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(mediaURL))];
         self.image = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(image))];
+        
+        if (self.image) {
+            self.downloadState = MediaDownloadStateHasImage;
+        } else if (self.mediaURL) {
+            self.downloadState = MediaDownloadStateNeedsImage;
+        } else {
+            self.downloadState = MediaDownloadStateNonRecoverableError;
+        }
+        
         self.caption = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(caption))];
         self.comments = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(comments))];
     }

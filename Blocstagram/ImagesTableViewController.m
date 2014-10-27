@@ -225,5 +225,28 @@
         NSLog(@"It worked");
     }];
 }
+/*
+-(void) tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    Media *mediaItem = [DataSource sharedInstance].mediaItems[indexPath.row];
+    if (mediaItem.downloadState == MediaDownloadStateNeedsImage) {
+        [[DataSource sharedInstance]downloadImageForMediaItem:mediaItem];
+    }
+}
+*/
+
+-(void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
+    NSArray *visibleCells = [self.tableView indexPathsForVisibleRows];
+    NSInteger tmprowOne = [[visibleCells objectAtIndex:0] row];
+    NSInteger tmprowTwo = [[visibleCells objectAtIndex:1] row];
+    Media *mediaItemOne = [DataSource sharedInstance].mediaItems[tmprowOne];
+    Media *mediaItemTwo = [DataSource sharedInstance].mediaItems[tmprowTwo];
+    if (mediaItemOne.downloadState == MediaDownloadStateNeedsImage) {
+        [[DataSource sharedInstance]downloadImageForMediaItem:mediaItemOne];
+        NSLog(@"MediaItemOne");
+    } if (mediaItemTwo.downloadState == MediaDownloadStateNeedsImage) {
+        [[DataSource sharedInstance]downloadImageForMediaItem:mediaItemTwo];
+    NSLog(@"MediaItemTwo");
+    }
+}
 
 @end
