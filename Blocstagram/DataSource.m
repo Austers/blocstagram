@@ -48,9 +48,10 @@
             if ([responseObject isKindOfClass:[NSDictionary class]]) {
                 [self parseDataFromFeedDictionary:responseObject fromRequestWithParameters:parameters];
                 
-                if (completionHandler) {
-                    completionHandler(nil);
-                }
+                
+            }
+            if (completionHandler) {
+                completionHandler(nil);
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             if (completionHandler) {
@@ -72,7 +73,7 @@
         
         if (mediaItem) {
             [tmpMediaItems addObject:mediaItem];
-            //[self downloadImageForMediaItem:mediaItem];
+            [self downloadImageForMediaItem:mediaItem];
         }
         
     }
@@ -205,7 +206,7 @@
         {
             parameters[@"min_id"] = minID;
         }
-        [self populateDataWithParameters:parameters completionHandler:^(NSError *error) {
+        [self populateDataWithParameters:parameters completionHandler:^(NSError *error){
             self.isRefreshing = NO;
             
             if (completionHandler) {
@@ -263,10 +264,10 @@
         
         //here we initialise the operation manager...
         
-        NSURL *baseURL = [NSURL URLWithString:@"https//api.instagram.com/v1/"];
+        NSURL *baseURL = [NSURL URLWithString:@"https://api.instagram.com/v1/"];
         self.instagramOperationManager = [[AFHTTPRequestOperationManager alloc]initWithBaseURL:baseURL];
         
-        AFJSONRequestSerializer *jsonSerializer = [AFJSONRequestSerializer serializer];
+        AFJSONResponseSerializer *jsonSerializer = [AFJSONResponseSerializer serializer];
         
         AFImageResponseSerializer *imageSerializer = [AFImageResponseSerializer serializer];
         imageSerializer.imageScale = 1.0;
@@ -321,6 +322,40 @@
 
 }
 
+#pragma mark - Liking Media Items
+
+-(void) toggleLikeOnMediaItem:(Media *)mediaItem {
+    NSString *urlString = [NSString stringWithFormat:@"media?%@/likes", mediaItem.idNumber];
+    
+    NSDictionary *parameters = @{@"access_token":self.accessToken};
+    
+    if (mediaItem.likeState == LikeStateNotLiked) {
+        mediaItem.likeState = LikeStateLiking;
+        
+        [self.instagramOperationManager POST:urlString parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            mediaItem.likeState = LikeStateLiked;
+            [self reloadMediaItem:mediaItem];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            mediaItem.likeState = LikeStateNotLiked;
+         [self reloadMediaItem:mediaItem];
+         }];
+    }else if (mediaItem.likeState == LikeStateLiked) {
+        mediaItem.likeState = LikeStateNotLiked;
+        [self.instagramOperationManager DELETE:urlString parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            mediaItem.likeState = LikeStateNotLiked;
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            mediaItem.likeState = LikeStateNotLiked;
+            [self reloadMediaItem:mediaItem];
+        }];
+    }
+    [self reloadMediaItem:mediaItem];
+}
+-(void)reloadMediaItem:(Media *)mediaItem {
+        NSMutableArray *mutableArrayWithKVO = [self mutableArrayValueForKey:@"mediaItems"];
+        NSUInteger index = [mutableArrayWithKVO indexOfObject:mediaItem];
+        [mutableArrayWithKVO replaceObjectAtIndex:index withObject:mediaItem];
+    }
+    
 // This method creates a string that contains an absolute path to the user's documents directory
 
 -(NSString *) pathForFilename:(NSString *) filename {
@@ -328,7 +363,6 @@
     NSString *documentaryDirectory = [paths firstObject];
     NSString *dataPath = [documentaryDirectory stringByAppendingPathComponent:filename];
     return dataPath;
-
 
 }
 

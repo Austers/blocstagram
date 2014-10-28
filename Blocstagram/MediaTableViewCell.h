@@ -24,6 +24,8 @@
 
 -(void) cell:(MediaTableViewCell *)cell didTapWithTwoFingers:(UIImageView *)imageView;
 
+-(void) cellDidPressLikeButton:(MediaTableViewCell *) cell;
+
 @end
 
 

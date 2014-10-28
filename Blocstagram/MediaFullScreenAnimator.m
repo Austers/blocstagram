@@ -58,31 +58,33 @@
             [transitionContext completeTransition:YES];
         }];
     
-} else
-    [transitionContext.containerView addSubview:toViewController.view];
-    [transitionContext.containerView addSubview:fromViewController.view];
-    
-    MediaFullScreenViewController *fullScreenVC = (MediaFullScreenViewController *)fromViewController;
-    
-    CGRect endFrame = [transitionContext.containerView convertRect:self.cellImageView.bounds fromView:self.cellImageView];
-    CGRect imageStartFrame = [fullScreenVC.view convertRect:fullScreenVC.imageView.frame fromView:fullScreenVC.scrollView];
-    CGRect imageEndFrame = [transitionContext.containerView convertRect:endFrame toView:fullScreenVC.view];
-    
-    [fullScreenVC.view addSubview:fullScreenVC.imageView];
-    fullScreenVC.imageView.frame = imageStartFrame;
-    fullScreenVC.imageView.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin;
-    
-    toViewController.view.userInteractionEnabled = YES;
-    
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
-        fullScreenVC.view.frame = endFrame;
-        fullScreenVC.imageView.frame = imageEndFrame;
+    }
+    else
+    {
+        //[transitionContext.containerView addSubview:toViewController.view];
+        //[transitionContext.containerView addSubview:fromViewController.view];
         
-        toViewController.view.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
-    } completion:^(BOOL finished) {
-        [transitionContext completeTransition:YES];
-    }];
-    
+        MediaFullScreenViewController *fullScreenVC = (MediaFullScreenViewController *)fromViewController;
+        
+        CGRect endFrame = [transitionContext.containerView convertRect:self.cellImageView.bounds fromView:self.cellImageView];
+        CGRect imageStartFrame = [fullScreenVC.view convertRect:fullScreenVC.imageView.frame fromView:fullScreenVC.scrollView];
+        CGRect imageEndFrame = [transitionContext.containerView convertRect:endFrame toView:fullScreenVC.view];
+        
+        [fullScreenVC.view addSubview:fullScreenVC.imageView];
+        fullScreenVC.imageView.frame = imageStartFrame;
+        fullScreenVC.imageView.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin;
+        
+        toViewController.view.userInteractionEnabled = YES;
+        
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
+            fullScreenVC.view.frame = endFrame;
+            fullScreenVC.imageView.frame = imageEndFrame;
+            
+            toViewController.view.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
+        } completion:^(BOOL finished) {
+            [transitionContext completeTransition:YES];
+        }];
+    }
 }
 
 @end

@@ -11,6 +11,7 @@
 #import "Comment.h"
 #import "User.h"
 #import "DataSource.h"
+#import "LikeButton.h"
 
 //We declare that we confirm to the gesture recogniser delegate protocol...
 
@@ -27,6 +28,8 @@
 @property (nonatomic, strong) UITapGestureRecognizer *tapGestureRecognizer;
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
 @property (nonatomic, strong) UITapGestureRecognizer *twoFingerTapGestureRecognizer;
+
+@property (nonatomic, strong) LikeButton *likeButton;
 
 @end
 
@@ -66,24 +69,29 @@ static NSParagraphStyle *paragraphStyle;
         self.twoFingerTapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(twoFingerTap:)];
         self.twoFingerTapGestureRecognizer.numberOfTouchesRequired = 2;
         self.twoFingerTapGestureRecognizer.delegate = self;
-        [self.mediaImageView addGestureRecognizer:self.twoFingerTapGestureRecognizer];
+        [self addGestureRecognizer:self.twoFingerTapGestureRecognizer];
         
         self.usernameAndCaptionLabel = [[UILabel alloc]init];
         self.commentLabel = [[UILabel alloc]init];
         self.commentLabel.numberOfLines = 0;
+        self.commentLabel.backgroundColor = commentLabelGray;
         
-        for (UIView *view in @[self.mediaImageView, self.usernameAndCaptionLabel, self.commentLabel])
+        self.likeButton = [[LikeButton alloc]init];
+        [self.likeButton addTarget:self action:@selector(likePressed:) forControlEvents:UIControlEventTouchUpInside];
+        self.likeButton.backgroundColor = usernameLabelGray;
+        
+        for (UIView *view in @[self.mediaImageView, self.usernameAndCaptionLabel, self.commentLabel, self.likeButton])
         {
             [self.contentView addSubview:view];
             view.translatesAutoresizingMaskIntoConstraints = NO;
         }
     
-        NSDictionary *viewDictionary = NSDictionaryOfVariableBindings(_mediaImageView, _usernameAndCaptionLabel, _commentLabel);
+        NSDictionary *viewDictionary = NSDictionaryOfVariableBindings(_mediaImageView, _usernameAndCaptionLabel, _commentLabel, _likeButton);
         
     
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_mediaImageView]|" options:kNilOptions metrics:nil views:viewDictionary]];
         
-        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_usernameAndCaptionLabel]|" options:kNilOptions metrics:nil views:viewDictionary]];
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_usernameAndCaptionLabel][_likeButton(==38)]|" options:NSLayoutFormatAlignAllTop | NSLayoutFormatAlignAllBottom metrics:nil views:viewDictionary]];
         
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_commentLabel]|" options: kNilOptions metrics:nil views:viewDictionary]];
         
@@ -124,6 +132,9 @@ static NSParagraphStyle *paragraphStyle;
     [self.delegate cell:self didTapWithTwoFingers:self.mediaImageView];
 }
 
+-(void) likePressed:(UIButton *)sender {
+    [self.delegate cellDidPressLikeButton:self];
+}
 
 # pragma mark - UIGestureRecognizerDelegate
 
@@ -210,6 +221,7 @@ static NSParagraphStyle *paragraphStyle;
     self.mediaImageView.image = _mediaitem.image;
     self.usernameAndCaptionLabel.attributedText = [self usernameAndCaptionString];
     self.commentLabel.attributedText = [self commentString];
+    self.likeButton.likeButtonState = mediaitem.likeState;
 
 }
 

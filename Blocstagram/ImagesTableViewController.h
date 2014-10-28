@@ -11,5 +11,6 @@
 @interface ImagesTableViewController : UITableViewController
 
 @property (nonatomic, strong) NSArray *items;
+@property(nonatomic, readonly, getter=isDragging) BOOL dragging;
 
 @end

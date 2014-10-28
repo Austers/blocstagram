@@ -18,6 +18,7 @@
 @interface ImagesTableViewController () <MediaTableViewCellDelegate, UIViewControllerTransitioningDelegate>
 
 @property (nonatomic, weak) UIImageView *lastTappedImageView;
+//@property(nonatomic, readonly, getter=isDragging) BOOL dragging;
 
 @end
 
@@ -220,11 +221,17 @@
     }
 }
 
--(void) cell:(MediaTableViewCell *)cell didTapWithTwoFingers:(UIImageView *)imageView {
-    [[DataSource sharedInstance] requestNewItemsWithCompletionHandler:^(NSError *error) {
-        NSLog(@"It worked");
-    }];
+-(void) cell:(MediaTableViewCell *)cell didTapWithTwoFingers:(UIImageView *)imageView
+{
+    NSLog(@"Two finger tap");
+    
+    [[DataSource sharedInstance] downloadImageForMediaItem:cell.mediaitem];
 }
+
+-(void) cellDidPressLikeButton:(MediaTableViewCell *)cell {
+    [[DataSource sharedInstance]toggleLikeOnMediaItem:cell.mediaitem];
+}
+
 /*
 -(void) tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
     Media *mediaItem = [DataSource sharedInstance].mediaItems[indexPath.row];
@@ -232,7 +239,7 @@
         [[DataSource sharedInstance]downloadImageForMediaItem:mediaItem];
     }
 }
-*/
+
 
 -(void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
     NSArray *visibleCells = [self.tableView indexPathsForVisibleRows];
@@ -240,7 +247,7 @@
     NSInteger tmprowTwo = [[visibleCells objectAtIndex:1] row];
     Media *mediaItemOne = [DataSource sharedInstance].mediaItems[tmprowOne];
     Media *mediaItemTwo = [DataSource sharedInstance].mediaItems[tmprowTwo];
-    if (mediaItemOne.downloadState == MediaDownloadStateNeedsImage) {
+    if (mediaItemOne.downloadState == MediaDownloadStateNeedsImage) && {
         [[DataSource sharedInstance]downloadImageForMediaItem:mediaItemOne];
         NSLog(@"MediaItemOne");
     } if (mediaItemTwo.downloadState == MediaDownloadStateNeedsImage) {
@@ -248,5 +255,5 @@
     NSLog(@"MediaItemTwo");
     }
 }
-
+*/
 @end
