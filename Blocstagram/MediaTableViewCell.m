@@ -12,10 +12,11 @@
 #import "User.h"
 #import "DataSource.h"
 #import "LikeButton.h"
+#import "ComposeCommentView.h"
 
 //We declare that we confirm to the gesture recogniser delegate protocol...
 
-@interface MediaTableViewCell () <UIGestureRecognizerDelegate>
+@interface MediaTableViewCell () <UIGestureRecognizerDelegate, ComposeCommentViewDelegate>
 
 @property (nonatomic, strong) UIImageView *mediaImageView;
 @property (nonatomic, strong) UILabel *usernameAndCaptionLabel;
@@ -30,6 +31,8 @@
 @property (nonatomic, strong) UITapGestureRecognizer *twoFingerTapGestureRecognizer;
 
 @property (nonatomic, strong) LikeButton *likeButton;
+
+@property (nonatomic, strong) ComposeCommentView *commentView;
 
 @end
 
@@ -80,13 +83,17 @@ static NSParagraphStyle *paragraphStyle;
         [self.likeButton addTarget:self action:@selector(likePressed:) forControlEvents:UIControlEventTouchUpInside];
         self.likeButton.backgroundColor = usernameLabelGray;
         
-        for (UIView *view in @[self.mediaImageView, self.usernameAndCaptionLabel, self.commentLabel, self.likeButton])
+        self.commentView = [[ComposeCommentView alloc]init];
+        self.commentView.delegate = self;
+
+        
+        for (UIView *view in @[self.mediaImageView, self.usernameAndCaptionLabel, self.commentLabel, self.likeButton, self.commentView])
         {
             [self.contentView addSubview:view];
             view.translatesAutoresizingMaskIntoConstraints = NO;
         }
     
-        NSDictionary *viewDictionary = NSDictionaryOfVariableBindings(_mediaImageView, _usernameAndCaptionLabel, _commentLabel, _likeButton);
+        NSDictionary *viewDictionary = NSDictionaryOfVariableBindings(_mediaImageView, _usernameAndCaptionLabel, _commentLabel, _likeButton, _commentView);
         
     
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_mediaImageView]|" options:kNilOptions metrics:nil views:viewDictionary]];
@@ -95,7 +102,9 @@ static NSParagraphStyle *paragraphStyle;
         
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_commentLabel]|" options: kNilOptions metrics:nil views:viewDictionary]];
         
-        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_mediaImageView][_usernameAndCaptionLabel][_commentLabel]" options:kNilOptions metrics:nil views:viewDictionary]];
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_commentView]|" options:kNilOptions metrics:nil views:viewDictionary]];
+        
+        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_mediaImageView][_usernameAndCaptionLabel][_commentLabel][_commentView(==100)]" options:kNilOptions metrics:nil views:viewDictionary]];
     
         self.imageHeightConstraint = [NSLayoutConstraint constraintWithItem:_mediaImageView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:100];
         
@@ -135,6 +144,37 @@ static NSParagraphStyle *paragraphStyle;
 -(void) likePressed:(UIButton *)sender {
     [self.delegate cellDidPressLikeButton:self];
 }
+
+#pragma mark = ComposeCommentViewDelegate
+
+
+// Here, the cell tells it's delegate (which is ImagesTableController) that a comment was composed
+-(void) commentViewDidPressCommentButton:(ComposeCommentView *)sender
+{
+    [self.delegate cell:self didComposeComment:self.mediaitem.temporaryComment];
+}
+
+// This stores any text written so far in temporaryComment - so the user can scroll up or down without losing the text
+
+-(void) commentView:(ComposeCommentView *)sender textDidChange:(NSString *)text
+{
+    self.mediaitem.temporaryComment = text;
+}
+
+//Tells ti ImageTableViewController that the user began editing
+
+-(void) commentViewWillStartEditing:(ComposeCommentView *)sender
+{
+    [self.delegate cellWillStartComposingComment:self];
+}
+
+//If another object tells the cell to stopComposingComment, the cell passes that message along to the comment view...
+
+-(void) stopComposingComment
+{
+    [self.commentView stopComposingComment];
+}
+
 
 # pragma mark - UIGestureRecognizerDelegate
 
@@ -222,6 +262,7 @@ static NSParagraphStyle *paragraphStyle;
     self.usernameAndCaptionLabel.attributedText = [self usernameAndCaptionString];
     self.commentLabel.attributedText = [self commentString];
     self.likeButton.likeButtonState = mediaitem.likeState;
+    self.commentView.text = mediaitem.temporaryComment;
 
 }
 
@@ -237,7 +278,7 @@ static NSParagraphStyle *paragraphStyle;
     [layoutCell setNeedsLayout];
     [layoutCell layoutIfNeeded];
     
-    return CGRectGetMaxY(layoutCell.commentLabel.frame);
+    return CGRectGetMaxY(layoutCell.commentView.frame);
 }
 
 -(void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
@@ -253,14 +294,14 @@ static NSParagraphStyle *paragraphStyle;
 
     // Configure the view for the selected state
 }
-
+/*
 -(CGFloat) tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
     Media *item = [DataSource sharedInstance].mediaItems[indexPath.row];
     if (item.image) {
-        return 350;
+        return 450;
     } else {
-        return 150;
+        return 250;
     }
 }
-
+*/
 @end

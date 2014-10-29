@@ -27,4 +27,8 @@ typedef void (^NewItemCompletionBlock)(NSError *error);
 -(void) downloadImageForMediaItem:(Media *)mediaItem;
 -(void) toggleLikeOnMediaItem:(Media *)mediaItem;
 
+//Method to handle comments
+
+-(void) commentOnMediaItem:(Media *)mediaItem withCommentText:(NSString *)commentText;
+
 @end
