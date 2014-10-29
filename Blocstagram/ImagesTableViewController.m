@@ -14,8 +14,9 @@
 #import "MediaTableViewCell.h"
 #import "MediaFullScreenViewController.h"
 #import "MediaFullScreenAnimator.h"
+#import "CameraViewController.h"
 
-@interface ImagesTableViewController () <MediaTableViewCellDelegate, UIViewControllerTransitioningDelegate>
+@interface ImagesTableViewController () <MediaTableViewCellDelegate, UIViewControllerTransitioningDelegate, CameraViewControllerDelegate>
 
 @property (nonatomic, weak) UIImageView *lastTappedImageView;
 //@property(nonatomic, readonly, getter=isDragging) BOOL dragging;
@@ -43,6 +44,17 @@
   //  Here, we request notifications of the keyboard appearing and dissappearing. This will call the respective methods just before the keyboard shows or hides
     
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] || [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+        UIBarButtonItem *cameraButton = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(cameraPressed:)];
+        self.navigationItem.rightBarButtonItem = cameraButton;
+    }
+    
+    
+    
+    
+    
+    
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     
@@ -351,6 +363,30 @@
     } completion:nil];
     
 }
+
+#pragma mark - Camera and CameraViewControllerDelegate
+
+-(void) cameraPressed:(UIBarButtonItem *)sender
+{
+    CameraViewController *cameraVC = [[CameraViewController alloc]init];
+    cameraVC.delegate = self;
+    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:cameraVC];[self presentViewController:nav animated:YES completion:nil];
+    return;
+}
+
+-(void) cameraViewController:(CameraViewController *)cameraViewController didCompleteWithImage:(UIImage *)image
+{
+    [cameraViewController dismissViewControllerAnimated:YES completion:^{
+        if (image) {
+            NSLog(@"Got an image!");
+        } else
+        {
+            NSLog(@"Closed without an image.");
+        }
+    }];
+}
+
+
 
 /*
 -(void) tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
