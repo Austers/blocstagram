@@ -1,5 +1,5 @@
 //
-//  LikeCount.h
+//  PostToInstagramViewController.h
 //  Blocstagram
 //
 //  Created by Richie Austerberry on 30/10/2014.
@@ -8,9 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface LikeCount : UILabel
+@interface PostToInstagramViewController : UIViewController
 
-@property (nonatomic, strong) UILabel *likeCountLabel;
+-(instancetype) initWithImage:(UIImage *)sourceImage;
 
 @end
-;
