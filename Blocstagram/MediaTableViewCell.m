@@ -30,6 +30,7 @@
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGestureRecognizer;
 @property (nonatomic, strong) UITapGestureRecognizer *twoFingerTapGestureRecognizer;
 
+@property (nonatomic, strong) UILabel* likesCountLabel;
 @property (nonatomic, strong) LikeButton *likeButton;
 
 @property (nonatomic, strong) ComposeCommentView *commentView;

@@ -69,7 +69,7 @@
     NSMutableArray *tmpMediaItems = [NSMutableArray array];
     
     for (NSDictionary *mediaDictionary in mediaArray) {
-        Media *mediaItem = [[Media alloc]initWithDictionary:mediaDictionary];
+        Media *mediaItem = [[Media alloc] initWithDictionary:mediaDictionary];
         
         if (mediaItem) {
             [tmpMediaItems addObject:mediaItem];
@@ -384,6 +384,7 @@
             [self reloadMediaItem:mediaItem];
         }];
     }
+    
     [self reloadMediaItem:mediaItem];
 }
 -(void)reloadMediaItem:(Media *)mediaItem {

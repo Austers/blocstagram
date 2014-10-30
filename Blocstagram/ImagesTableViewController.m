@@ -15,8 +15,9 @@
 #import "MediaFullScreenViewController.h"
 #import "MediaFullScreenAnimator.h"
 #import "CameraViewController.h"
+#import "ImageLibraryViewController.h"
 
-@interface ImagesTableViewController () <MediaTableViewCellDelegate, UIViewControllerTransitioningDelegate, CameraViewControllerDelegate>
+@interface ImagesTableViewController () <MediaTableViewCellDelegate, UIViewControllerTransitioningDelegate, CameraViewControllerDelegate,ImageLibraryViewControllerDelegate>
 
 @property (nonatomic, weak) UIImageView *lastTappedImageView;
 //@property(nonatomic, readonly, getter=isDragging) BOOL dragging;
@@ -274,7 +275,7 @@
 }
 
 -(void) cellDidPressLikeButton:(MediaTableViewCell *)cell {
-    [[DataSource sharedInstance]toggleLikeOnMediaItem:cell.mediaitem];
+    [[DataSource sharedInstance] toggleLikeOnMediaItem:cell.mediaitem];
 }
 
 -(void) cellWillStartComposingComment:(MediaTableViewCell *)cell
@@ -364,13 +365,29 @@
     
 }
 
-#pragma mark - Camera and CameraViewControllerDelegate
+#pragma mark - Camera and CameraViewControllerDelegate, and ImageLibraryViewControllerDelegate
 
 -(void) cameraPressed:(UIBarButtonItem *)sender
 {
+    
+    UIViewController *imageVC;
+    
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+    
     CameraViewController *cameraVC = [[CameraViewController alloc]init];
     cameraVC.delegate = self;
-    UINavigationController *nav = [[UINavigationController alloc]initWithRootViewController:cameraVC];[self presentViewController:nav animated:YES completion:nil];
+        
+        imageVC = cameraVC;
+    } else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+        ImageLibraryViewController *imageLibraryVC = [[ImageLibraryViewController alloc] init];
+        imageLibraryVC.delegate = self;
+        imageVC = imageLibraryVC;
+    }
+    
+    if (imageVC) {
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:imageVC];
+        [self presentViewController:nav animated:YES completion:nil];
+    }
     return;
 }
 
@@ -386,7 +403,15 @@
     }];
 }
 
-
+- (void) imageLibraryViewController:(ImageLibraryViewController *)imageLibraryViewController didCompleteWithImage:(UIImage *)image {
+    [imageLibraryViewController dismissViewControllerAnimated:YES completion:^{
+        if (image) {
+            NSLog(@"Got an image!");
+        } else {
+            NSLog(@"Closed without an image.");
+        }
+    }];
+}
 
 /*
 -(void) tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {

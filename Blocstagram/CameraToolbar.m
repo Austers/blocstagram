@@ -94,7 +94,7 @@
 
 -(void) rightButtonPressed:(UIButton *)sender
 {
-    [self.delegate leftbuttonPressedOnToolbar:self];
+    [self.delegate rightButtonPressedOnToolbar:self];
 }
 
 -(void) cameraButtonPressed:(UIButton *)sender

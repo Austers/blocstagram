@@ -19,4 +19,5 @@
 
 @property (nonatomic, weak) UIImageView *cellImageView;
 
+
 @end
