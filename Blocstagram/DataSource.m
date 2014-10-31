@@ -29,9 +29,22 @@
 
 @implementation DataSource
 
+//Set up the notification that dismisses the popover when the user is done
+
+NSString *const ImageFinishedNotification = @"ImageFinishedNotification";
+
+
 +(NSString *) instagramClientID {
     return @"ce5d64cb11c54196a874ff3f0a1a8c98";
 }
+
+// ? What is going on here?
+
+
+- (void)documentInteractionController:(UIDocumentInteractionController *)controller didEndSendingToApplication:(NSString *)application {
+        [[NSNotificationCenter defaultCenter] postNotificationName:ImageFinishedNotification object:self];
+}
+
 
 -(void) populateDataWithParameters:(NSDictionary *)parameters completionHandler:(NewItemCompletionBlock)completionHandler {
 

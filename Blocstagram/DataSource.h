@@ -14,6 +14,10 @@ typedef void (^NewItemCompletionBlock)(NSError *error);
 
 @interface DataSource : NSObject
 
+//Setup notification - used to dismiss popover when user is done
+
+extern NSString *const ImageFinishedNotification;
+
 +(instancetype) sharedInstance;
 +(NSString *) instagramClientID;
 
