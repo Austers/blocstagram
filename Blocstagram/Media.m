@@ -51,6 +51,17 @@
         BOOL userHasLiked = [mediaDictionary[@"user_has_liked"]boolValue];
         
         self.likeState = userHasLiked ? LikeStateLiked : LikeStateNotLiked;
+        
+    //    NSMutableArray *likesCountArray = [NSMutableArray array];
+        
+       // for (NSDictionary *likesDictionary in mediaDictionary[)
+        
+        
+        
+        
+     //   self.likesCount
+        
+        
     }
     return self;
 }

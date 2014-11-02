@@ -28,6 +28,8 @@
 
 @property (nonatomic, strong) UIPopoverController *cameraPopover;
 
+@property (nonatomic, strong) UIPopoverController *activityPopover;
+
 @end
 
 @implementation ImagesTableViewController
@@ -264,7 +266,35 @@
         // code to present Activity View controller to allow sharing
         
         UIActivityViewController *activityVC = [[UIActivityViewController alloc]initWithActivityItems:itemsToShare applicationActivities:nil];
-        [self presentViewController:activityVC animated:YES completion:nil];
+        
+
+        
+        if (isPhone) {
+            [self presentViewController:activityVC animated:YES completion:nil];
+        }
+        else
+        {
+            activityVC.modalPresentationStyle = UIModalPresentationPopover;
+            
+            [self presentViewController:activityVC animated:YES completion:nil];
+        
+            UIPopoverPresentationController *presentationController = [activityVC popoverPresentationController];
+            
+            presentationController.sourceView = self.view;
+            
+            //activityVC.popoverPresentationController
+            
+           // self.activityPopover = [[UIPopoverController alloc]initWithContentViewController:activityVC];
+            
+           // self.activityPopover.popoverContentSize = CGSizeMake(320, 568);
+//            
+//            CGSize popoverSize = self.activityPopover.popoverContentSize;
+//            
+//            CGRect popover = CGRectMake((((CGRectGetWidth(self.view.frame))/2)-(popoverSize.width / 2)), (((CGRectGetHeight(self.view.frame))/2)-(popoverSize.height/2)), popoverSize.width, popoverSize.height);
+//            
+//            [self.cameraPopover presentPopoverFromRect:popover inView:cell permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        }
+        //[self presentViewController:activityVC animated:YES completion:nil];
     }
 }
 
