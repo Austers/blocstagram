@@ -8,6 +8,11 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "User.h"
+#import "Comment.h"
+#import "Media.h"
+#import "ImagesTableViewController.h"
+#import "MediaTableViewCell.h"
 
 @interface UserTests : XCTestCase
 
@@ -25,10 +30,74 @@
     [super tearDown];
 }
 
-- (void)testExample {
-    // This is an example of a functional test case.
-    XCTAssert(YES, @"Pass");
+-(void)testThatInitializationWorks
+{
+    NSDictionary *sourceDictionary = @{@"id":@"8675309",
+                                       @"username": @"d'oh",
+                                       @"full_name":@"Homer Simpson",
+                                       @"profile_picture":@"http://www.example.com/example.jpg"};
+    
+    User *testUser = [[User alloc]initWithDictionary:sourceDictionary];
+    
+    XCTAssertEqualObjects(testUser.idNumber, sourceDictionary[@"id"], @"The ID number should be equal");
+    XCTAssertEqualObjects(testUser.userName, sourceDictionary[@"username"], @"The username should be equal");
+    XCTAssertEqualObjects(testUser.fullName, sourceDictionary[@"full_name"], @"The full name should be equal");
+    XCTAssertEqualObjects(testUser.profilePictureURL, [NSURL URLWithString:sourceDictionary[@"profile_picture"]], @"The profile picture should be equal");
 }
+
+-(void)testThatCommentInitializationWorks
+{
+    NSDictionary *sourceDictionary = @{@"id": @"8675309",
+                                       @"text":@"Sample Comment"};
+    
+    Comment *testComment = [[Comment alloc]initWithDictionary:sourceDictionary];
+    
+    XCTAssertEqualObjects(testComment.idNumber, sourceDictionary[@"id"], @"The ID number should be equal");
+    XCTAssertEqualObjects(testComment.text, sourceDictionary[@"text"], @"The text should be equal");
+}
+/*
+-(void)testThatMediaInitializerWorks
+{
+    NSDictionary *preSourceDictionary = @{@"id":@"8675309",};
+    
+    NSMutableDictionary *sourceDictionary = [preSourceDictionary mutableCopy];
+    
+    NSDictionary *captionDictionary = @{@"text":@"Yo! This is a good pic!"};
+    
+    NSDictionary *commentDictionary = @{@"Mike":@"Great pic!"};
+    NSDictionary* commentDataDictionary = @{@"data":commentDictionary};
+
+    
+    [sourceDictionary setObject:captionDictionary forKey:@"caption"];
+
+    [sourceDictionary setObject:commentDataDictionary forKey:@"comments"];
+    NSArray *commentsArray = [[NSArray alloc]initWithObjects:commentDictionary, nil];
+    
+    Media *testMedia = [[Media alloc]initWithDictionary:sourceDictionary];
+    
+   XCTAssertEqualObjects(testMedia.idNumber, sourceDictionary[@"id"], @"The ID number should be equal");
+    XCTAssertEqualObjects(testMedia.caption, captionDictionary[@"text"], @"The caption text should be equal");
+    XCTAssertEqualObjects(testMedia.comments, commentsArray, @"The caption text should be equal");
+    
+}
+
+-(void) isWritingCommentTest
+{
+    ImagesTableViewController *viewController = [[ImagesTableViewController alloc]init];
+    [viewController cell]
+}
+
+-(void) heightForMediaItemTest
+{
+    MediaTableViewCell *testCell = [[MediaTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"layoutCell"];
+    
+    NSDictionary *mediaDictionary = [[NSDictionary alloc]initWithObjectsAndKeys:<#(id), ...#>, nil
+    
+    Media *mediaitemSource = [[Media alloc]initWithDictionary:<#(NSDictionary *)#>]
+    
+    testCell.mediaitem =
+}
+*/
 
 - (void)testPerformanceExample {
     // This is an example of a performance test case.
